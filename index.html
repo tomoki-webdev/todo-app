@@ -1,0 +1,31 @@
+<body>
+<input id="username" value="俺">
+<input id="email" value="test">
+<input id="password" value="1234">
+<button onclick="register()">登録</button>
+<button id="loginBtn" type="button">ログイン</button>
+    <script>
+document.getElementById("loginBtn").addEventListener("click",async(e)=> {
+e.preventDefault();
+    console.log("押された");
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    const res = await fetch("login",{
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        credentials: "include",
+        body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+        if(data.success ){
+            alert("ログイン成功!");
+            window.location.href = "todo.html";
+        }else{
+            alert("ログイン失敗");
+        }
+    });
+    </script></body>
