@@ -8,7 +8,7 @@ Node.js/Expressを利用して作成した、ログイン機能付きのTODO管�
 - 未ログイン時のアクセス制限
 - TODOの追加
 - TODOの一覧表示
-- TODOの検索
+- キーワードによるTODOの絞り込み
 - TODOの更新
 - TODOの削除
 - SQLiteを使用したデータ保存
