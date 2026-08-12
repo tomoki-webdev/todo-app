@@ -42,7 +42,7 @@ app.post('/update/:id', (req, res)=> {
     const targetId = req.params.id;
     const isChecked = req.body.status === '1' ? 1 : 0;
     const sql ='UPDATE todos SET completed = ? WHERE id = ?';
-    db.query(sql, [isChecked, targetId], (err, result) => {
+    db.run(sql, [isChecked, targetId], function(err)  {
         if (err) {
             console.error('データベースの更新エラー:', err);
             return res.status(500).json({ error: '更新に失敗しました'});
@@ -76,8 +76,12 @@ const users=[
 app.post("/login",(req,res)=>{
     const{email,password}=req.body;
 
-     if(email ==="test" &&   password==="1234") {
+     if(
+     (email ==="test" &&   password === "1234") ||
+     (email === "test2" && password === "5678")
+     ) {
         req.session.isLoggedIn = true;
+        req.session.userId = email;
         res.json({  success:true});
     }else{
         res.json({ success:false});
@@ -86,19 +90,30 @@ app.post("/login",(req,res)=>{
 app.post("/add", async (req, res) =>{
     try{
     const{ text }=req.body;
-    await db.run("INSERT INTO todos (text, completed) VALUES (?, 0)",[text]);
+    const userId = req.session.userId;
+    await db.run("INSERT INTO todos (text, completed, user_id) VALUES (?, 0, ?)",
+        [text, userId]
+    );
 res.json({ success: true });
     } catch (err) {
+        console.error( "追加エラー:", err);
         res.status(500).json({ error: err.message });
     }
 });
 app.get("/todos", async (req,res)=>{
     try {
  const keyword = req.query.search;
+ const userId = req.session.userId;
+ const allRows = await db.all("SELECT * FROM todos");
+ let rows;
     if (!keyword) {
-        rows = await db.all("SELECT * FROM todos");
+        rows = await db.all("SELECT * FROM todos WHERE user_id = ?",
+            [userId]         
+        );
     }else {
-        rows = await db.all("SELECT * FROM todos WHERE text LIKE ?", `%${keyword}%`);
+        rows = await db.all("SELECT * FROM todos WHERE user_id = ? AND text LIKE ?",
+            [userId, `%${keyword}%`]
+        );
     }
     res.json(rows);
 } catch (err) {
@@ -106,12 +121,17 @@ app.get("/todos", async (req,res)=>{
 }
 });
 app.delete("/delete/:id", async (req, res) => {
-    await db.run("DELETE FROM todos WHERE id = ?", [req.params.id]);
+    await db.run("DELETE FROM todos WHERE id = ? AND user_id = ?",
+         [req.params.id, req.session.userId]
+        );
     res.json({ success: true });
 });
 app.put("/todos/:id",async (req, res) => {
     const completedValue = req.body.completed ? 1 : 0;
-    await db.run("UPDATE todos SET completed = ? WHERE id = ?", [completedValue, req.params.id]);
+    await db.run(
+        "UPDATE todos SET completed = ? WHERE id = ? AND user_id = ?", 
+        [completedValue, req.params.id, req.session.userId]
+    );
     res.json({ success: true });
 });
 
