@@ -77,8 +77,8 @@ app.post("/login",(req,res)=>{
     const{email,password}=req.body;
 
      if(
-     (email ==="test" &&   password === "1234") ||
-     (email === "test2" && password === "5678")
+     (email ==="test" &&   password === "TodoDemo-8472-Test") ||
+     (email === "test2" && password === "TodoDemo-5931-Test")
      ) {
         req.session.isLoggedIn = true;
         req.session.userId = email;
